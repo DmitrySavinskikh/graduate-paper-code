@@ -60,6 +60,43 @@ class MatrixGenerator():
             row = []
         
         return output_matrix
+    
+    def random_real_spe1case1_matrix(
+            self
+        ):
+        # data logic as in spe1case1.data
+
+        water_saturation_step = (1 - 0.12) / (15 - 1)
+        water_saturation = 0.12
+        water_rel_permeab_step = 0.00001/15 + random.uniform(-2e-7, 2e-7)
+        water_rel_permeab = 0
+        oil_rel_permeab_step = 1/15 + random.uniform(-0.01,0.01)
+        oil_rel_permeab = 1
+        water_oil_capillary = random.uniform(-1, 1)
+
+
+        output_matrix = []
+        row = []
+        for i in range(15):
+            row.append(round(water_saturation, 6))
+            row.append(round(water_rel_permeab, 6))
+            row.append(round(oil_rel_permeab, 6))
+            row.append(round(water_oil_capillary, 6))
+
+            # uniform distribution of parameters for matrix 4x15
+            water_saturation += water_saturation_step
+            if i == 14:
+                water_rel_permeab = 0.00001
+            else:
+                water_rel_permeab += water_rel_permeab_step
+
+            oil_rel_permeab -= oil_rel_permeab_step
+            water_oil_capillary = random.uniform(-1, 1)
+
+            output_matrix.append(row)
+            row = []
+        
+        return output_matrix
 
     def format_matrix(
             self,
@@ -108,6 +145,8 @@ class MatrixGenerator():
                 matrix = self.random_matrix()
             elif matrix_kind == 'min2max': # only for self.iters = 1
                 matrix = self.min2max_matrix()
+            elif matrix_kind == 'rand_real':
+                matrix = self.random_real_spe1case1_matrix()
             formatted_matrix = self.format_matrix(matrix)
             self.insert_matrix(output_file, formatted_matrix, 144, 158)
 
@@ -119,6 +158,6 @@ if __name__ == '__main__':
         iters=2, 
         src_file='/home/dmitrysavinskikh/data/opm-data/spe1/SPE1CASE1.DATA', 
         main_dir='/home/dmitrysavinskikh/graduate-paper-code/spe1')
-    generator.make_files(matrix_kind='random')
+    generator.make_files(matrix_kind='rand_real')
 
     
