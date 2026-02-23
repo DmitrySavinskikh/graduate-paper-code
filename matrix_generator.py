@@ -86,9 +86,9 @@ class MatrixGenerator():
 
         water_saturation_step = (1 - 0.12) / (15 - 1)
         water_saturation = 0.12
-        water_rel_permeab_step = 0.00001/15 + random.uniform(-2e-7, 2e-7)
+        water_rel_permeab_step = 0.00001/15 + random.uniform(-2e-6, 2e-6)
         water_rel_permeab = 0
-        oil_rel_permeab_step = 1/15 + random.uniform(-0.01,0.01)
+        oil_rel_permeab_step = 1/15 + random.uniform(-0.02,0.02)
         oil_rel_permeab = 1
 
         output_matrix = []
@@ -142,17 +142,17 @@ class MatrixGenerator():
         row = []
         for i in range(15):
             if i in range(0,4):
-                row.append(gas_saturation[i] + random.uniform(-0.02, 0.02))
+                row.append(gas_saturation[i] + random.uniform(-0.04, 0.04))
                 row.append(gas_rel_permeab[i])
                 row.append(oil_rel_permeab[i])
                 row.append(0)
             elif i in range(10,15):
-                row.append(gas_saturation[i] + random.uniform(-0.02, 0.02))
+                row.append(gas_saturation[i] + random.uniform(-0.04, 0.04))
                 row.append(gas_rel_permeab[i])
                 row.append(oil_rel_permeab[i])
                 row.append(0)
             else:
-                row.append(gas_saturation[i] + random.uniform(-0.02, 0.02))
+                row.append(gas_saturation[i] + random.uniform(-0.04, 0.04))
                 row.append(gas_rel_permeab[i])
                 row.append(oil_rel_permeab[i])
                 row.append(0)
@@ -181,9 +181,9 @@ class MatrixGenerator():
         output_matrix = []
         row = []
         for i in range(10):
-            row.append(gas_phase_pres_lst[i] + random.uniform(-10, 10))
-            row.append(round(gas_form_vol_factor[i] + random.uniform(-0.05, 0.05), 3))
-            row.append(round(gas_visc[i] + random.uniform(-0.00015, 0.00015), 4))
+            row.append(gas_phase_pres_lst[i] + random.uniform(-20, 20))
+            row.append(round(gas_form_vol_factor[i] + random.uniform(-0.08, 0.08), 3))
+            row.append(round(gas_visc[i] + random.uniform(-0.0003, 0.0003), 4))
 
             output_matrix.append(row)
             row = []
@@ -196,7 +196,7 @@ class MatrixGenerator():
         # data logic matrix for pvto
 
         dissol_gas_oil_ratio = [0.0010,0.0905,0.1800,0.3710,0.6360,0.7750,0.9300,1.2700]
-        f_val=14.7 + random.uniform(-5, 20)
+        f_val=14.7 + random.uniform(-10, 40)
         s_val=264.7 + random.uniform(-40, 30)
         bubble_point_pres = [f_val,s_val,514.7,1014.7,2014.7,2514.7,3014.7,4014.7]
         oil_fvf = [1.0620,1.1500,1.2070,1.2950,1.4350,1.5,1.5650,1.6950]
@@ -206,13 +206,13 @@ class MatrixGenerator():
         output_matrix = []
         row = []
         for i in range(8):
-            row.append(round(dissol_gas_oil_ratio[i] + random.uniform(-0.03, 0.03), 4))
+            row.append(round(dissol_gas_oil_ratio[i] + random.uniform(-0.06, 0.06), 4))
             if i > 3:
-                row.append(bubble_point_pres[i] + random.uniform(-75, 75))
+                row.append(bubble_point_pres[i] + random.uniform(-150, 150))
             else:
                 row.append(bubble_point_pres[i])
-            row.append(round(oil_fvf[i] + random.uniform(-0.002, 0.002), 4))
-            row.append(round(oil_visc[i] + random.uniform(-0.015, 0.015), 4))
+            row.append(round(oil_fvf[i] + random.uniform(-0.004, 0.004), 4))
+            row.append(round(oil_visc[i] + random.uniform(-0.03, 0.03), 4))
 
             output_matrix.append(row)
             row = []
@@ -224,7 +224,7 @@ class MatrixGenerator():
         ):
         # data logic matrix for equil
         
-        return [[8400 + random.uniform(-10, 10), 4800 + random.uniform(-300, 300), 8450 + random.uniform(-10, 10), 0, 8300 + random.uniform(-50, 50), random.randint(0,1), 1, 0, 0]]
+        return [[8400 + random.uniform(-15, 15), 4800 + random.uniform(-300, 300), 8450 + random.uniform(-15, 15), 0, 8300 + random.uniform(-60, 60), random.randint(0,1), 1, 0, 0]]
 
     def format_matrix(
             self,
