@@ -1,0 +1,134 @@
+import matrix_generator as mg
+import os
+import subprocess
+from pathlib import Path
+
+class DatasetLoader:
+    def __init__(self, base_path="~/graduate-paper-code/spe1"):
+        self.base_path = Path(base_path).expanduser()
+        self.source_file = self.base_path / "SPE1CASE1.data"
+        self.generated_files = []
+
+    def run_matrix_generator(self):
+        generator = mg.MatrixGenerator(
+            iters=2, 
+            src_file='/home/dmitrysavinskikh/data/opm-data/spe1/SPE1CASE1.DATA', 
+            main_dir='/home/dmitrysavinskikh/graduate-paper-code/spe1',
+            swof_from=144,
+            swof_to=157,
+            sgof_from=169,
+            sgof_to=182,
+            pvdg_from=211,
+            pvdg_to=219,
+            pvto_from=229,
+            pvto_to=235,
+            equil_line=273
+        )
+
+        self.generated_files = generator.make_files()
+
+        return self.generated_files
+    
+    def run_flow_on_all_files(
+            self, 
+            pattern="SPE1CASE1_ITER_*.DATA"
+        ):        
+        data_files = list(self.base_path.glob(pattern))
+        
+        if not data_files:
+            print(f'пусто в {self.base_path}')
+        
+        print(f'файлов .DATA {len(data_files)}')
+        
+        self.flow_results = []
+        for i, data_file in enumerate(data_files, 1):
+            print(f"\n[{i}/{len(data_files)}] Обработка файла: {data_file.name}")
+            
+            result = self._run_flow_command(data_file)
+            self.flow_results.append({
+                'file': data_file,
+                'success': result['success'],
+                'output': result['output'],
+                'error': result['error']
+            })
+            
+            if result['success']:
+                print(f"  ✓ Успешно завершено")
+            else:
+                print(f"  ✗ Ошибка при выполнении")
+        
+        # Подводим итоги
+        successful = sum(1 for r in self.flow_results if r['success'])
+        print(f"\n--- Итоги выполнения flow ---")
+        print(f"Всего файлов: {len(data_files)}")
+        print(f"Успешно: {successful}")
+        print(f"С ошибками: {len(data_files) - successful}")
+        
+        return self.flow_results
+
+    def _run_flow_command(self, data_file):
+        """
+        Запускает команду flow для конкретного файла
+        
+        Parameters:
+        data_file: путь к .DATA файлу
+        
+        Returns:
+        словарь с результатами выполнения
+        """
+        command = f"flow {data_file}"
+        
+        try:
+            # Запускаем процесс
+            process = subprocess.Popen(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                cwd=self.base_path  # Запускаем в директории с файлом
+            )
+            
+            # Ждем завершения и получаем вывод
+            stdout, stderr = process.communicate(timeout=300)  # 5 минут таймаут
+            
+            return {
+                'success': process.returncode == 0,
+                'output': stdout,
+                'error': stderr,
+                'returncode': process.returncode
+            }
+            
+        except subprocess.TimeoutExpired:
+            process.kill()
+            return {
+                'success': False,
+                'output': '',
+                'error': 'Timeout expired (300 seconds)',
+                'returncode': -1
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'output': '',
+                'error': str(e),
+                'returncode': -1
+            }
+        
+    def get_successful_runs(self):
+        return [r['file'] for r in self.flow_results if r['success']]
+    
+    def get_failed_runs(self):
+        """
+        Возвращает список файлов, для которых flow завершился с ошибкой
+        """
+        return [r['file'] for r in self.flow_results if not r['success']]
+
+
+if __name__ == "__main__":
+    loader = DatasetLoader()
+    # loader.run_matrix_generator(n_iterations=5)
+    
+    results = loader.run_flow_on_all_files()
+    print(f"\nУспешные запуски: {len(loader.get_successful_runs())}")
+    print(f"Неудачные запуски: {len(loader.get_failed_runs())}")
