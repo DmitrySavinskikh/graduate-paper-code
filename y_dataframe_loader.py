@@ -1,19 +1,19 @@
 import re
 import pandas as pd
 from pathlib import Path
-from typing import Optional, List, Dict, Union
+from typing import Optional, Dict, Union
 
-class DataFrameLoader:
+class YDataFrameLoader:
     """
     Loader of data from SPE1CASE<N> PRT files
     Parses the files and creates a final dataframe with the simulation results.
     """
     
-    def __init__(self, base_path: str = "~/graduate-paper-code/spe1"):
+    def __init__(self, base_path: str = '~/graduate-paper-code/spe1'):
         self.base_path = Path(base_path).expanduser()
         self.parsed_data: Dict[str, pd.DataFrame] = {}
         
-    def load_final_df(self, pattern: str = "SPE1CASE1_ITER_*.PRT") -> pd.DataFrame:
+    def load_final_df(self, pattern: str = 'SPE1CASE1_ITER_*.PRT') -> pd.DataFrame:
         """
         Downloads and parses all .PRT files matching the pattern
         
@@ -47,9 +47,9 @@ class DataFrameLoader:
             final_df = pd.concat(all_dfs, ignore_index=True)
             print('--------------------------------')
             print('FINAL DF: ')
-            print(f' - all rows: {len(final_df)}')
-            print(f' - columns list: {list(final_df.columns)}')
-            print(f" - unique iters: {final_df['iteration'].nunique()}")
+            print(' - all rows: ',len(final_df))
+            print(' - columns list: ',list(final_df.columns))
+            print(' - unique iters: ', final_df['iteration'].nunique())
             print('--------------------------------')
             
             return final_df
@@ -165,7 +165,7 @@ class DataFrameLoader:
 
 
 if __name__ == "__main__":
-    loader = DataFrameLoader()
+    loader = YDataFrameLoader()
     df = loader.load_final_df()
     
     print('\nfirst 10 rows: ')

@@ -1,6 +1,7 @@
 import random
 import os
 import shutil
+import pandas as pd
 
 class MatrixGenerator():
     def __init__(
@@ -84,6 +85,8 @@ class MatrixGenerator():
         ):
         # data logic matrix for swof
 
+        output_df = pd.DataFrame(columns=['water_saturation', 'water_relative_permeability', 'oil_relative_permeability', 'water_oil_capillary_pressure'])
+
         water_saturation_step = (1 - 0.12) / (15 - 1)
         water_saturation = 0.12
         water_rel_permeab_step = 0.00001/15 + random.uniform(-2e-6, 2e-6)
@@ -113,15 +116,17 @@ class MatrixGenerator():
 
             # row.append(round(random.uniform(0, 0.3), 6))
 
-
             output_matrix.append(row)
+            output_df.loc[len(output_df)] = row
             row = []
-        return output_matrix
+        return output_matrix, output_df
     
     def create_sgof_matrix(
             self
         ):
         # data logic matrix for sgof
+
+        output_df = pd.DataFrame(columns=['gas_saturation', 'gas_relative_permeability', 'oil_relative_permeability', 'oil_gas_capillary_pressure'])
 
         f_val = 0
         s_val = 0.001
@@ -160,15 +165,18 @@ class MatrixGenerator():
             
             # oil_gas_capillary = random.uniform(-0.5, 0.5)
 
+            output_df.loc[len(output_df)] = row
             output_matrix.append(row)
             row = []
         
-        return output_matrix
+        return output_matrix, output_df
     
     def create_pvdg_matrix(
             self
         ):
         # data logic matrix for pvdg
+
+        output_df = pd.DataFrame(columns=['gas_phase_pressure', 'gas_formation_volume_factor', 'gas_viscosity'])
 
         f_val=14 + random.uniform(-15, 20)
         gas_phase_pres_lst = [f_val,264,514,1014,2014,2514,3014,4014,5014,9014]
@@ -184,16 +192,18 @@ class MatrixGenerator():
             row.append(gas_phase_pres_lst[i] + random.uniform(-20, 20))
             row.append(round(gas_form_vol_factor[i] + random.uniform(-0.08, 0.08), 3))
             row.append(round(gas_visc[i] + random.uniform(-0.0003, 0.0003), 4))
-
+            
+            output_df.loc[len(output_df)] = row
             output_matrix.append(row)
             row = []
         
-        return output_matrix
+        return output_matrix, output_df
 
     def create_pvto_matrix(
             self
         ):
         # data logic matrix for pvto
+        output_df = pd.DataFrame(columns=['dissolved_gas_oil_ratio', 'bubble_point_pressure', 'oil_fvf_for_saturated_oil', 'oil_viscosity_for_saturated_oil'])
 
         dissol_gas_oil_ratio = [0.0010,0.0905,0.1800,0.3710,0.6360,0.7750,0.9300,1.2700]
         f_val=14.7 + random.uniform(-10, 40)
@@ -214,17 +224,20 @@ class MatrixGenerator():
             row.append(round(oil_fvf[i] + random.uniform(-0.004, 0.004), 4))
             row.append(round(oil_visc[i] + random.uniform(-0.03, 0.03), 4))
 
+            output_df.loc[len(output_df)] = row
             output_matrix.append(row)
             row = []
         
-        return output_matrix
+        return output_matrix, output_df
     
     def create_equil_matrix(
             self
         ):
         # data logic matrix for equil
-        
-        return [[8400 + random.uniform(-15, 15), 4800 + random.uniform(-300, 300), 8450 + random.uniform(-15, 15), 0, 8300 + random.uniform(-60, 60), random.randint(0,1), 1, 0, 0]]
+        output_df = pd.DataFrame(columns=['datum_depth', 'pressure_at_datum_depth', 'depth_of_water_oil_contact', 'oil_water_capillary_pressure_at_water_oil_contact', 'depth_of_gas_oil_contact', 'gas_oil_capillary_pressure_at_gas_oil_contact', 'rsvd_table', 'rvvd_table', 'set_to_0'])
+        output_lst = [[8400 + random.uniform(-15, 15), 4800 + random.uniform(-300, 300), 8450 + random.uniform(-15, 15), 0, 8300 + random.uniform(-60, 60), random.randint(0,1), 1, 0, 0]]
+        output_df.loc[len(output_df)] = output_lst[0]
+        return output_lst, output_df
 
     def format_matrix(
             self,
@@ -273,12 +286,13 @@ class MatrixGenerator():
     def make_files(
             self
         ):
+        final_df = pd.DataFrame()
 
         for i in range(self.iters):
             output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{i}.DATA')
             shutil.copy2(self.src_file, output_file)
             
-            swof_matrix = self.create_swof_matrix()
+            swof_matrix, swof_df = self.create_swof_matrix()
             formatted_swof_matrix = self.format_matrix(swof_matrix)
             self.insert_matrix(output_file, formatted_swof_matrix, self.swof_from, self.swof_to)
 
@@ -286,17 +300,23 @@ class MatrixGenerator():
             # formatted_sgof_matrix = self.format_matrix(sgof_matrix)
             # self.insert_matrix(output_file, formatted_sgof_matrix, self.sgof_from, self.sgof_to)
 
-            pvdg_matrix = self.create_pvdg_matrix()
+            pvdg_matrix, pvdg_df = self.create_pvdg_matrix()
             formatted_pvdg_matrix = self.format_matrix(pvdg_matrix)
             self.insert_matrix(output_file, formatted_pvdg_matrix, self.pvdg_from, self.pvdg_to)
 
-            pvto_matrix = self.create_pvto_matrix()
+            pvto_matrix, pvto_df = self.create_pvto_matrix()
             formatted_pvto_matrix = self.format_pvto_matrix(pvto_matrix)
             self.insert_matrix(output_file, formatted_pvto_matrix, self.pvto_from, self.pvto_to)
 
-            equil_matrix = self.create_equil_matrix()
+            equil_matrix, equil_df = self.create_equil_matrix()
             formatted_equil_matrix = self.format_matrix(equil_matrix)
             self.insert_matrix(output_file, formatted_equil_matrix, self.equil_line, self.equil_line)
+
+            iter_df = pd.DataFrame({'iteration': [i] * 15})
+            final_iter_df = pd.concat([swof_df, pvdg_df, pvto_df, equil_df, iter_df], axis=1)
+            final_df = pd.concat([final_df, final_iter_df])
+
+        return final_df
 
 
 if __name__ == '__main__':
@@ -314,6 +334,10 @@ if __name__ == '__main__':
         pvto_to=235,
         equil_line=273
     )
-    generator.make_files()
+    # _, df = generator.create_swof_matrix()
+    # print(df)
+    # pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_rows', None)
+    print(generator.make_files())
 
     
