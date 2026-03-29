@@ -102,7 +102,7 @@ class MatrixGenerator():
                 row.append(round(oil_rel_permeab, 6))
                 row.append(0)
             else:
-                row.append(round(water_saturation + random.uniform(-0.03, 0.03), 6))
+                row.append(round(water_saturation, 6))
                 water_saturation += water_saturation_step
                 row.append(round(water_rel_permeab, 6))
                 row.append(round(oil_rel_permeab, 6))
