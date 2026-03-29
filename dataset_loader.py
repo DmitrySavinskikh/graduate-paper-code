@@ -119,13 +119,11 @@ class FinalDatasetLoader:
         return [r['file'] for r in self.flow_results if not r['success']]
     
     def run_y_df(self):
-        loader = ydf.YDataFrameLoader()
-        return loader.load_final_df()
+        yloader = ydf.YDataFrameLoader()
+        return yloader.load_final_df()
 
     def aggregate_dfs(self):
         x_df = self.run_matrix_generator(iters=3)
-
-
         y_df = self.run_y_df()
 
         return x_df, y_df
@@ -133,8 +131,12 @@ class FinalDatasetLoader:
 
 if __name__ == "__main__":
     loader = FinalDatasetLoader()
-    # loader.run_matrix_generator(n_iterations=5)
-    
+    x_df = loader.run_matrix_generator(iters=24)[['iteration', 'N_w', 'N_o']].drop_duplicates()
     results = loader.run_flow_on_all_files()
+    y_df = loader.run_y_df()
+    to_saving_df = pd.merge(x_df, y_df, on='iteration', how='inner')
+    print(to_saving_df)
+    yloader = ydf.YDataFrameLoader()
+    yloader.save_to_csv(df=to_saving_df,filename='csv_output.csv')
     print('Successful runs: ', len(loader.get_successful_runs()))
     print('Unsuccessful runs: ', len(loader.get_failed_runs()))

@@ -81,40 +81,32 @@ class MatrixGenerator():
         return output_matrix
     
     def create_swof_matrix(
-            self
+            self,
+            N_w: int,
+            N_o: int
         ):
         # data logic matrix for swof
 
         output_df = pd.DataFrame(columns=['water_saturation', 'water_relative_permeability', 'oil_relative_permeability', 'water_oil_capillary_pressure'])
 
-        water_saturation_step = (1 - 0.12) / (15 - 1)
-        water_saturation = 0.12
-        water_rel_permeab_step = 0.00001/15 + random.uniform(-2e-6, 2e-6)
-        water_rel_permeab = 0
-        oil_rel_permeab_step = 1/15 + random.uniform(-0.02,0.02)
-        oil_rel_permeab = 1
-
+        water_saturation_step = (1 - 0.035) / (15 - 1)
+        water_saturation = 0.035
         output_matrix = []
         row = []
         for i in range(15):
+            water_rel_permeab = (water_saturation ** N_w ) * (10**-5)
+            oil_rel_permeab = (1 - water_saturation) ** N_o
             if i == 14:
-                water_rel_permeab = 0.00001
                 row.append(round(water_saturation, 6))
                 row.append(round(water_rel_permeab, 6))
-                oil_rel_permeab = 0
                 row.append(round(oil_rel_permeab, 6))
                 row.append(0)
             else:
-                row.append(round(water_saturation, 6))
+                row.append(round(water_saturation + random.uniform(-0.03, 0.03), 6))
                 water_saturation += water_saturation_step
                 row.append(round(water_rel_permeab, 6))
-                water_rel_permeab += water_rel_permeab_step
                 row.append(round(oil_rel_permeab, 6))
-                oil_rel_permeab -= oil_rel_permeab_step
                 row.append(0)
-
-
-            # row.append(round(random.uniform(0, 0.3), 6))
 
             output_matrix.append(row)
             output_df.loc[len(output_df)] = row
@@ -283,43 +275,66 @@ class MatrixGenerator():
                 f.writelines(lines)
 
 
-    def make_files(
-            self
-        ):
-        final_df = pd.DataFrame()
+    # def make_files(
+    #         self
+    #     ):
+    #     final_df = pd.DataFrame()
 
-        for i in range(self.iters):
-            output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{i}.DATA')
-            shutil.copy2(self.src_file, output_file)
+    #     for i in range(self.iters):
+    #         output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{i}.DATA')
+    #         shutil.copy2(self.src_file, output_file)
             
-            swof_matrix, swof_df = self.create_swof_matrix()
-            formatted_swof_matrix = self.format_matrix(swof_matrix)
-            self.insert_matrix(output_file, formatted_swof_matrix, self.swof_from, self.swof_to)
+    #         swof_matrix, swof_df = self.create_swof_matrix(N_w=random.randint(1, 5), N_o=random.randint(1, 5))
+    #         formatted_swof_matrix = self.format_matrix(swof_matrix)
+    #         self.insert_matrix(output_file, formatted_swof_matrix, self.swof_from, self.swof_to)
 
-            # sgof_matrix = self.create_sgof_matrix()
-            # formatted_sgof_matrix = self.format_matrix(sgof_matrix)
-            # self.insert_matrix(output_file, formatted_sgof_matrix, self.sgof_from, self.sgof_to)
+    #         # sgof_matrix = self.create_sgof_matrix()
+    #         # formatted_sgof_matrix = self.format_matrix(sgof_matrix)
+    #         # self.insert_matrix(output_file, formatted_sgof_matrix, self.sgof_from, self.sgof_to)
 
-            pvdg_matrix, pvdg_df = self.create_pvdg_matrix()
-            formatted_pvdg_matrix = self.format_matrix(pvdg_matrix)
-            self.insert_matrix(output_file, formatted_pvdg_matrix, self.pvdg_from, self.pvdg_to)
+    #         # pvdg_matrix, pvdg_df = self.create_pvdg_matrix()
+    #         # formatted_pvdg_matrix = self.format_matrix(pvdg_matrix)
+    #         # self.insert_matrix(output_file, formatted_pvdg_matrix, self.pvdg_from, self.pvdg_to)
 
-            pvto_matrix, pvto_df = self.create_pvto_matrix()
-            formatted_pvto_matrix = self.format_pvto_matrix(pvto_matrix)
-            self.insert_matrix(output_file, formatted_pvto_matrix, self.pvto_from, self.pvto_to)
+    #         # pvto_matrix, pvto_df = self.create_pvto_matrix()
+    #         # formatted_pvto_matrix = self.format_pvto_matrix(pvto_matrix)
+    #         # self.insert_matrix(output_file, formatted_pvto_matrix, self.pvto_from, self.pvto_to)
 
-            equil_matrix, equil_df = self.create_equil_matrix()
-            formatted_equil_matrix = self.format_matrix(equil_matrix)
-            self.insert_matrix(output_file, formatted_equil_matrix, self.equil_line, self.equil_line)
+    #         # equil_matrix, equil_df = self.create_equil_matrix()
+    #         # formatted_equil_matrix = self.format_matrix(equil_matrix)
+    #         # self.insert_matrix(output_file, formatted_equil_matrix, self.equil_line, self.equil_line)
 
-            iter_df = pd.DataFrame({'iteration': [i] * 15})
-            final_iter_df = pd.concat([swof_df, pvdg_df, pvto_df, equil_df, iter_df], axis=1)
-            final_df = pd.concat([final_df, final_iter_df])
+    #         iter_df = pd.DataFrame({'iteration': [i] * 15})
+    #         final_iter_df = pd.concat([swof_df, 
+    #                                 #    pvdg_df, pvto_df, equil_df, 
+    #                                    iter_df], axis=1)
+    #         final_df = pd.concat([final_df, final_iter_df])
+
+    #     return final_df
+
+    def make_files(
+        self
+    ):
+        final_df = pd.DataFrame()
+        counter = 0
+        for nw in range(1,6):
+            for no in range(1,6):
+                output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{counter}.DATA')
+                shutil.copy2(self.src_file, output_file)
+                iter_df = pd.DataFrame({'iteration': [counter] * 15, 'N_w': [nw]*15, 'N_o': [no]*15})
+                swof_matrix, swof_df = self.create_swof_matrix(N_w=nw, N_o=no)
+                formatted_swof_matrix = self.format_matrix(swof_matrix)
+                self.insert_matrix(output_file, formatted_swof_matrix, self.swof_from, self.swof_to)
+                final_iter_df = pd.concat([swof_df, iter_df], axis=1)
+                final_df = pd.concat([final_df, final_iter_df])
+
+                counter += 1
 
         return final_df
 
 
 if __name__ == '__main__':
+    import random
     generator = MatrixGenerator(
         iters=2, 
         src_file='/home/dmitrysavinskikh/data/opm-data/spe1/SPE1CASE1.DATA', 
@@ -334,7 +349,7 @@ if __name__ == '__main__':
         pvto_to=235,
         equil_line=273
     )
-    # _, df = generator.create_swof_matrix()
+    # _, df = generator.create_swof_matrix(N_w=random.randint(1, 5), N_o=random.randint(1, 5))
     # print(df)
     # pd.set_option('display.max_columns', None)
     # pd.set_option('display.max_rows', None)
