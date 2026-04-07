@@ -4,3 +4,4 @@ numpy==1.18.2
 tensorflow==2.20.0
 matplotlib==3.10.7
 scikit-image==0.25.2
+seaborn==0.13.2
