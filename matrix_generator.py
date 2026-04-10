@@ -99,13 +99,13 @@ class MatrixGenerator():
             if i == 14:
                 row.append(round(water_saturation, 6))
                 row.append(round(water_rel_permeab, 6))
-                row.append(round(oil_rel_permeab, 6))
+                row.append(0)
                 row.append(0)
             else:
                 row.append(round(water_saturation, 6))
                 water_saturation += water_saturation_step
                 row.append(round(water_rel_permeab, 6))
-                row.append(round(oil_rel_permeab, 6))
+                row.append(oil_rel_permeab)
                 row.append(0)
 
             output_matrix.append(row)
@@ -317,8 +317,8 @@ class MatrixGenerator():
     ):
         final_df = pd.DataFrame()
         counter = 0
-        for nw in range(1,6):
-            for no in range(1,6):
+        for nw in [round(random.uniform(1, 5), 2) for _ in range(50)]:
+            for no in [round(random.uniform(1, 5), 2) for _ in range(50)]:
                 output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{counter}.DATA')
                 shutil.copy2(self.src_file, output_file)
                 iter_df = pd.DataFrame({'iteration': [counter] * 15, 'N_w': [nw]*15, 'N_o': [no]*15})
