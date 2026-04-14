@@ -83,7 +83,9 @@ class MatrixGenerator():
     def create_swof_matrix(
             self,
             N_w: int,
-            N_o: int
+            N_o: int,
+            coef_water: int,
+            coef_oil: int
         ):
         # data logic matrix for swof
 
@@ -94,8 +96,8 @@ class MatrixGenerator():
         output_matrix = []
         row = []
         for i in range(15):
-            water_rel_permeab = (water_saturation ** N_w ) * (10**-5)
-            oil_rel_permeab = (1 - water_saturation) ** N_o
+            water_rel_permeab = (water_saturation ** N_w ) * (coef_water)
+            oil_rel_permeab = ((1 - water_saturation) ** N_o) * coef_oil
             if i == 14:
                 row.append(round(water_saturation, 6))
                 row.append(round(water_rel_permeab, 6))
@@ -317,12 +319,24 @@ class MatrixGenerator():
     ):
         final_df = pd.DataFrame()
         counter = 0
-        for nw in [round(random.uniform(1, 5), 2) for _ in range(50)]:
-            for no in [round(random.uniform(1, 5), 2) for _ in range(50)]:
+        coef_water_lst = [10**-5, 10**-4, 10**-3]
+        coef_oil_lst = [1, 0.1]
+        for nw in [random.uniform(0.8, 5) for _ in range(50)]:
+            for no in [random.uniform(0.8, 5) for _ in range(50)]:
                 output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{counter}.DATA')
                 shutil.copy2(self.src_file, output_file)
-                iter_df = pd.DataFrame({'iteration': [counter] * 15, 'N_w': [nw]*15, 'N_o': [no]*15})
-                swof_matrix, swof_df = self.create_swof_matrix(N_w=nw, N_o=no)
+
+                coef_water = random.choice(coef_water_lst)
+                coef_oil = random.choice(coef_oil_lst)
+
+                iter_df = pd.DataFrame({
+                    'iteration': [counter] * 15, 
+                    'N_w': [nw]*15, 
+                    'N_o': [no]*15, 
+                    'coef_water': coef_water, 
+                    'coef_oil': 1
+                })
+                swof_matrix, swof_df = self.create_swof_matrix(N_w=nw, N_o=no, coef_water=coef_water, coef_oil=1)
                 formatted_swof_matrix = self.format_matrix(swof_matrix)
                 self.insert_matrix(output_file, formatted_swof_matrix, self.swof_from, self.swof_to)
                 final_iter_df = pd.concat([swof_df, iter_df], axis=1)

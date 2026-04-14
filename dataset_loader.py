@@ -131,7 +131,7 @@ class FinalDatasetLoader:
 
 if __name__ == "__main__":
     loader = FinalDatasetLoader()
-    x_df = loader.run_matrix_generator(iters=1)[['iteration', 'N_w', 'N_o']].drop_duplicates()
+    x_df = loader.run_matrix_generator(iters=1)[['iteration', 'N_w', 'N_o', 'coef_oil', 'coef_water']].drop_duplicates()
     results = loader.run_flow_on_all_files()
     y_df = loader.run_y_df()
     y_df = y_df[y_df['day'] == 3650]
