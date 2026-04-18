@@ -129,9 +129,22 @@ class FinalDatasetLoader:
         return x_df, y_df
 
 
+# if __name__ == "__main__":
+#     loader = FinalDatasetLoader()
+#     x_df = loader.run_matrix_generator(iters=1)[['iteration', 'N_w', 'N_o', 'coef_oil', 'coef_water']].drop_duplicates()
+#     results = loader.run_flow_on_all_files()
+#     y_df = loader.run_y_df()
+#     y_df = y_df[y_df['day'] == 3650]
+#     to_saving_df = pd.merge(x_df, y_df, on='iteration', how='inner')
+#     print(to_saving_df)
+#     yloader = ydf.YDataFrameLoader()
+#     yloader.save_to_csv(df=to_saving_df,filename='csv_output.csv')
+#     print('Successful runs: ', len(loader.get_successful_runs()))
+#     print('Unsuccessful runs: ', len(loader.get_failed_runs()))
+
 if __name__ == "__main__":
     loader = FinalDatasetLoader()
-    x_df = loader.run_matrix_generator(iters=1)[['iteration', 'N_w', 'N_o', 'coef_oil', 'coef_water']].drop_duplicates()
+    x_df = loader.run_matrix_generator(iters=1)[['iteration', 'water_relative_permeability', 'oil_relative_permeability']].drop_duplicates()
     results = loader.run_flow_on_all_files()
     y_df = loader.run_y_df()
     y_df = y_df[y_df['day'] == 3650]

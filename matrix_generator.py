@@ -91,21 +91,26 @@ class MatrixGenerator():
 
         output_df = pd.DataFrame(columns=['water_saturation', 'water_relative_permeability', 'oil_relative_permeability', 'water_oil_capillary_pressure'])
 
-        water_saturation_step = (1 - 0.035) / (15 - 1)
-        water_saturation = 0.035
+        # first 2500 rows
+        # water_saturation_step = (1 - 0.035) / (15 - 1)
+        # water_saturation = 0.035
+
+        # second 2500 rows
+        water_saturation = [0.12,0.18,0.24,0.3,0.36,0.42,0.48,0.54,0.6,0.66,0.72,0.78,0.84,0.91,1]
+
         output_matrix = []
         row = []
         for i in range(15):
-            water_rel_permeab = (water_saturation ** N_w ) * (coef_water)
-            oil_rel_permeab = ((1 - water_saturation) ** N_o) * coef_oil
+            water_rel_permeab = (water_saturation[i] ** N_w ) * (coef_water)
+            oil_rel_permeab = ((1 - water_saturation[i]) ** N_o) * coef_oil
             if i == 14:
-                row.append(round(water_saturation, 6))
+                row.append(round(water_saturation[i], 6))
                 row.append(round(water_rel_permeab, 6))
                 row.append(0)
                 row.append(0)
             else:
-                row.append(round(water_saturation, 6))
-                water_saturation += water_saturation_step
+                row.append(round(water_saturation[i], 6))
+                # water_saturation += water_saturation_step
                 row.append(round(water_rel_permeab, 6))
                 row.append(oil_rel_permeab)
                 row.append(0)
@@ -319,23 +324,19 @@ class MatrixGenerator():
     ):
         final_df = pd.DataFrame()
         counter = 0
-        coef_water_lst = [10**-5, 10**-4, 10**-3]
-        coef_oil_lst = [1, 0.1]
-        for nw in [random.uniform(0.8, 5) for _ in range(50)]:
-            for no in [random.uniform(0.8, 5) for _ in range(50)]:
+        for nw in [random.uniform(0.8, 5) for _ in range(5)]:
+            for no in [random.uniform(0.8, 5) for _ in range(5)]:
                 output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{counter}.DATA')
                 shutil.copy2(self.src_file, output_file)
 
-                coef_water = random.choice(coef_water_lst)
-                coef_oil = random.choice(coef_oil_lst)
-
+                coef_water = 10**random.uniform(-5,-3)
                 iter_df = pd.DataFrame({
                     'iteration': [counter] * 15, 
                     'N_w': [nw]*15, 
                     'N_o': [no]*15, 
-                    'coef_water': coef_water, 
-                    'coef_oil': 1
+                    'coef_water': coef_water
                 })
+
                 swof_matrix, swof_df = self.create_swof_matrix(N_w=nw, N_o=no, coef_water=coef_water, coef_oil=1)
                 formatted_swof_matrix = self.format_matrix(swof_matrix)
                 self.insert_matrix(output_file, formatted_swof_matrix, self.swof_from, self.swof_to)
@@ -363,10 +364,10 @@ if __name__ == '__main__':
         pvto_to=235,
         equil_line=273
     )
-    # _, df = generator.create_swof_matrix(N_w=random.randint(1, 5), N_o=random.randint(1, 5))
-    # print(df)
+    _, df = generator.create_swof_matrix(N_w=random.randint(1, 5), N_o=random.randint(1, 5), coef_water=0.01, coef_oil=1)
+    print(df)
     # pd.set_option('display.max_columns', None)
     # pd.set_option('display.max_rows', None)
-    print(generator.make_files())
+    # print(generator.make_files())
 
     
