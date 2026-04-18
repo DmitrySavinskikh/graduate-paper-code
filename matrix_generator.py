@@ -324,12 +324,12 @@ class MatrixGenerator():
     ):
         final_df = pd.DataFrame()
         counter = 0
-        for nw in [random.uniform(0.8, 5) for _ in range(5)]:
-            for no in [random.uniform(0.8, 5) for _ in range(5)]:
+        for nw in [random.uniform(0.8, 5) for _ in range(50)]:
+            for no in [random.uniform(0.8, 5) for _ in range(50)]:
                 output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{counter}.DATA')
                 shutil.copy2(self.src_file, output_file)
 
-                coef_water = 10**random.uniform(-5,-3)
+                coef_water = 10**round(random.uniform(-5,-3),1)
                 iter_df = pd.DataFrame({
                     'iteration': [counter] * 15, 
                     'N_w': [nw]*15, 
