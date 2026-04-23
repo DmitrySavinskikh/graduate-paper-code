@@ -105,13 +105,17 @@ class MatrixGenerator():
             oil_rel_permeab = ((1 - water_saturation[i]) ** N_o) * coef_oil
             if i == 14:
                 row.append(round(water_saturation[i], 6))
-                row.append(round(water_rel_permeab, 6))
+                row.append(round(water_rel_permeab, 2))
                 row.append(0)
+                row.append(0)
+            elif i == 0:
+                row.append(round(water_saturation[i], 6))
+                row.append(0.00)
+                row.append(oil_rel_permeab)
                 row.append(0)
             else:
                 row.append(round(water_saturation[i], 6))
-                # water_saturation += water_saturation_step
-                row.append(round(water_rel_permeab, 6))
+                row.append(round(water_rel_permeab, 2))
                 row.append(oil_rel_permeab)
                 row.append(0)
 
@@ -329,7 +333,9 @@ class MatrixGenerator():
                 output_file = os.path.join(self.main_dir, f'SPE1CASE1_ITER_{counter}.DATA')
                 shutil.copy2(self.src_file, output_file)
 
-                coef_water = 10**round(random.uniform(-5,-3),1)
+                coef_water = round(random.uniform(1, 0.2),2) # N_w 2.729487 N_o 2.978296   coef_water 0.000025
+                # coef_water = round(random.uniform(0.1,1),1)
+                # coef_water = 1
                 iter_df = pd.DataFrame({
                     'iteration': [counter] * 15, 
                     'N_w': [nw]*15, 
